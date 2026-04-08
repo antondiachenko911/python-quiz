@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Python Quiz</title>
+<style>
+body { font-family: Arial; max-width: 700px; margin: 40px auto; }
+.hidden { display: none; }
+button { margin-top: 10px; padding: 8px 12px; }
+.timer { font-weight: bold; color: darkred; }
+table { border-collapse: collapse; margin-top: 20px; }
+td, th { border: 1px solid #ccc; padding: 6px 10px; }
+</style>
+</head>
+<body>
+
+<h2>Перевірка базових знань Python</h2>
+
+<div id="start">
+    <label>Введіть ім’я:</label><br><br>
+    <input type="text" id="username">
+    <br><br>
+    <button onclick="startQuiz()">Почати тест</button>
+</div>
+
+<div id="quiz" class="hidden">
+    <div class="timer">Залишилось: <span id="time">60</span> сек</div>
+    <h3 id="question"></h3>
+    <div id="answers"></div>
+</div>
+
+<div id="result" class="hidden">
+    <h3 id="finalScore"></h3>
+    <button onclick="location.reload()">Пройти ще раз</button>
+    <h4>Результати:</h4>
+    <table id="resultsTable">
+        <tr><th>Ім’я</th><th>Бали</th></tr>
+    </table>
+</div>
+
+<script>
+const questions = [
+{
+    q: "Що повертає функція input()?",
+    a: ["int", "float", "str", "bool"],
+    correct: 2
+},
+{
+    q: "Як оголосити змінну?",
+    a: ["var x = 5", "let x = 5", "x = 5", "int x = 5"],
+    correct: 2
+},
+{
+    q: "Оператор перевірки рівності:",
+    a: ["=", "==", "===", "!="],
+    correct: 1
+},
+{
+    q: "Що виведе print(type(10))?",
+    a: ["int", "<class 'int'>", "type int", "number"],
+    correct: 1
+},
+{
+    q: "Який тип є immutable?",
+    a: ["list", "dict", "set", "tuple"],
+    correct: 3
+}
+];
+
+let current = 0;
+let score = 0;
+let timer;
+let timeLeft = 60;
+let username = "";
+
+function startQuiz() {
+    username = document.getElementById("username").value;
+    if (!username) {
+        alert("Введіть ім’я");
+        return;
+    }
+    document.getElementById("start").classList.add("hidden");
+    document.getElementById("quiz").classList.remove("hidden");
+    showQuestion();
+}
+
+function showQuestion() {
+    if (current >= questions.length) {
+        endQuiz();
+        return;
+    }
+
+    timeLeft = 60;
+    document.getElementById("time").innerText = timeLeft;
+
+    timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById("time").innerText = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            current++;
+            showQuestion();
+        }
+    }, 1000);
+
+    const q = questions[current];
+    document.getElementById("question").innerText = q.q;
+
+    const answersDiv = document.getElementById("answers");
+    answersDiv.innerHTML = "";
+
+    q.a.forEach((answer, index) => {
+        const btn = document.createElement("button");
+        btn.innerText = answer;
+        btn.onclick = () => {
+            clearInterval(timer);
+            if (index === q.correct) score++;
+            current++;
+            showQuestion();
+        };
+        answersDiv.appendChild(btn);
+        answersDiv.appendChild(document.createElement("br"));
+    });
+}
+
+function endQuiz() {
+    document.getElementById("quiz").classList.add("hidden");
+    document.getElementById("result").classList.remove("hidden");
+
+    document.getElementById("finalScore").innerText =
+        username + ", ваш результат: " + score + " / " + questions.length;
+
+    saveResult(username, score);
+    loadResults();
+}
+
+function saveResult(name, score) {
+    let results = JSON.parse(localStorage.getItem("quizResults")) || [];
+    results.push({ name, score });
+    localStorage.setItem("quizResults", JSON.stringify(results));
+}
+
+function loadResults() {
+    let results = JSON.parse(localStorage.getItem("quizResults")) || [];
+    const table = document.getElementById("resultsTable");
+
+    results.forEach(r => {
+        const row = table.insertRow();
+        row.insertCell(0).innerText = r.name;
+        row.insertCell(1).innerText = r.score;
+    });
+}
+</script>
+
+</body>
+</html>
