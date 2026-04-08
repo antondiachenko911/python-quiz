@@ -130,8 +130,20 @@ function endQuiz() {
     document.getElementById("finalScore").innerText =
         username + ", ваш результат: " + score + " / " + questions.length;
 
-    saveResult(username, score);
-    loadResults();
+    fetch("https://script.google.com/macros/s/AKfycbx0iqx2vFlC_tTPBAG_H5pxK3gdhX1u950mzj43BK3SONcjXS2sdmjhwM0he_QVKrx3wg/exec", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            name: username,
+            score: score,
+            total: questions.length
+        })
+    })
+    .then(response => response.json())
+    .then(data => console.log("Success:", data))
+    .catch(error => console.error("Error:", error));
 }
 
 function saveResult(name, score) {
