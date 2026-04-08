@@ -2,158 +2,168 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>Python Quiz</title>
+<title>Перевірка базових знань Python</title>
+
 <style>
-body { font-family: Arial; max-width: 700px; margin: 40px auto; }
-.hidden { display: none; }
-button { margin-top: 10px; padding: 8px 12px; }
-.timer { font-weight: bold; color: darkred; }
-table { border-collapse: collapse; margin-top: 20px; }
-td, th { border: 1px solid #ccc; padding: 6px 10px; }
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    text-align: center;
+    padding: 40px;
+}
+
+h1 {
+    font-size: 36px;
+}
+
+#quiz-container, #result-screen {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.option-btn {
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+}
+
+#timer {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #555;
+}
+
+#result-screen {
+    display: none;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
 </style>
 </head>
+
 <body>
 
-<h2>Перевірка базових знань Python</h2>
+<h1>Перевірка базових знань Python</h1>
 
-<div id="start">
-    <label>Введіть ім’я:</label><br><br>
-    <input type="text" id="username">
+<div id="start-screen">
+    <input type="text" id="username" placeholder="Введіть ваше ім'я">
     <br><br>
     <button onclick="startQuiz()">Почати тест</button>
 </div>
 
-<div id="quiz" class="hidden">
-    <div class="timer">Залишилось: <span id="time">60</span> сек</div>
-    <h3 id="question"></h3>
-    <div id="answers"></div>
+<div id="quiz-container" style="display:none;">
+    <div id="timer"></div>
+    <h2 id="question"></h2>
+    <div id="options"></div>
 </div>
 
-<div id="result-screen" style="display:none; text-align:center; margin-top:40px;">
-
-  <h1>Перевірка базових знань Python</h1>
-
-  <div id="result-card" style="
-      margin: 30px auto;
-      padding: 30px;
-      max-width: 500px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      background: white;
-  ">
-
-      <h2 id="result-name"></h2>
-
-      <p style="font-size:22px; margin:15px 0;">
-          Результат: <strong id="result-score"></strong>
-      </p>
-
-      <p style="font-size:20px;">
-          Відсоток: <strong id="result-percent"></strong>
-      </p>
-
-      <p id="result-status" style="
-          font-size:20px;
-          font-weight:bold;
-          margin-top:15px;
-      "></p>
-
-  </div>
-
-  <button onclick="location.reload()" style="
-      padding:12px 25px;
-      font-size:16px;
-      border-radius:8px;
-      border:none;
-      cursor:pointer;
-  ">
-      Пройти ще раз
-  </button>
-
+<div id="result-screen">
+    <h2 id="result-name"></h2>
+    <h3 id="result-score"></h3>
+    <h3 id="result-percent"></h3>
+    <h3 id="result-status"></h3>
+    <br>
+    <button onclick="location.reload()">Пройти ще раз</button>
 </div>
 
 <script>
+
 const questions = [
 {
-    q: "Що повертає функція input()?",
-    a: ["int", "float", "str", "bool"],
-    correct: 2
+    question: "Що виведе print(type(5))?",
+    options: ["<class 'int'>", "<class 'str'>", "int", "number"],
+    correct: 0
 },
 {
-    q: "Як оголосити змінну?",
-    a: ["var x = 5", "let x = 5", "x = 5", "int x = 5"],
-    correct: 2
-},
-{
-    q: "Оператор перевірки рівності:",
-    a: ["=", "==", "===", "!="],
+    question: "Який оператор використовується для степеня?",
+    options: ["^", "**", "//", "%%"],
     correct: 1
 },
 {
-    q: "Що виведе print(type(10))?",
-    a: ["int", "<class 'int'>", "type int", "number"],
+    question: "Що повертає len([1,2,3])?",
+    options: ["2", "3", "4", "Error"],
     correct: 1
 },
 {
-    q: "Який тип є immutable?",
-    a: ["list", "dict", "set", "tuple"],
+    question: "Який тип даних є незмінним?",
+    options: ["list", "dict", "set", "tuple"],
     correct: 3
+},
+{
+    question: "Як створити функцію в Python?",
+    options: ["function myFunc()", "def myFunc():", "create myFunc()", "func myFunc()"],
+    correct: 1
 }
 ];
 
-let current = 0;
+let currentQuestion = 0;
 let score = 0;
 let timer;
 let timeLeft = 60;
-let username = "";
+let name = "";
 
 function startQuiz() {
-    username = document.getElementById("username").value;
-    if (!username) {
-        alert("Введіть ім’я");
+    name = document.getElementById("username").value.trim();
+
+    if (name === "") {
+        alert("Введіть ім'я");
         return;
     }
-    document.getElementById("start").classList.add("hidden");
-    document.getElementById("quiz").classList.remove("hidden");
+
+    document.getElementById("start-screen").style.display = "none";
+    document.getElementById("quiz-container").style.display = "block";
+
     showQuestion();
 }
 
 function showQuestion() {
-    if (current >= questions.length) {
+    if (currentQuestion >= questions.length) {
         endQuiz();
         return;
     }
 
     timeLeft = 60;
-    document.getElementById("time").innerText = timeLeft;
+    document.getElementById("timer").innerText = "Час: " + timeLeft + " сек";
 
     timer = setInterval(() => {
         timeLeft--;
-        document.getElementById("time").innerText = timeLeft;
+        document.getElementById("timer").innerText = "Час: " + timeLeft + " сек";
+
         if (timeLeft <= 0) {
             clearInterval(timer);
-            current++;
+            currentQuestion++;
             showQuestion();
         }
     }, 1000);
 
-    const q = questions[current];
-    document.getElementById("question").innerText = q.q;
+    const q = questions[currentQuestion];
+    document.getElementById("question").innerText = q.question;
 
-    const answersDiv = document.getElementById("answers");
-    answersDiv.innerHTML = "";
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
 
-    q.a.forEach((answer, index) => {
+    q.options.forEach((option, index) => {
         const btn = document.createElement("button");
-        btn.innerText = answer;
+        btn.innerText = option;
+        btn.classList.add("option-btn");
         btn.onclick = () => {
             clearInterval(timer);
-            if (index === q.correct) score++;
-            current++;
+            if (index === q.correct) {
+                score++;
+            }
+            currentQuestion++;
             showQuestion();
         };
-        answersDiv.appendChild(btn);
-        answersDiv.appendChild(document.createElement("br"));
+        optionsDiv.appendChild(btn);
     });
 }
 
@@ -161,7 +171,9 @@ function endQuiz() {
 
     const percent = Math.round((score / questions.length) * 100);
 
-    // Заповнюємо блок результатів
+    document.getElementById("quiz-container").style.display = "none";
+    document.getElementById("result-screen").style.display = "block";
+
     document.getElementById("result-name").innerText =
         name + ", ваш результат:";
 
@@ -181,13 +193,6 @@ function endQuiz() {
         statusEl.style.color = "red";
     }
 
-    // Ховаємо тест
-    document.getElementById("quiz-container").style.display = "none";
-
-    // Показуємо екран результату
-    document.getElementById("result-screen").style.display = "block";
-
-    // Відправка в Google Sheets
     fetch("https://script.google.com/macros/s/AKfycbzNmz9wZUIeE7fXGSwsyf865BnddcnWhGdn-duH9RF57HEAR_Z1l7VUnc8zvM9dj8I4jA/exec", {
         method: "POST",
         body: JSON.stringify({
@@ -202,22 +207,6 @@ function endQuiz() {
     .catch(err => console.error("Error:", err));
 }
 
-function saveResult(name, score) {
-    let results = JSON.parse(localStorage.getItem("quizResults")) || [];
-    results.push({ name, score });
-    localStorage.setItem("quizResults", JSON.stringify(results));
-}
-
-function loadResults() {
-    let results = JSON.parse(localStorage.getItem("quizResults")) || [];
-    const table = document.getElementById("resultsTable");
-
-    results.forEach(r => {
-        const row = table.insertRow();
-        row.insertCell(0).innerText = r.name;
-        row.insertCell(1).innerText = r.score;
-    });
-}
 </script>
 
 </body>
