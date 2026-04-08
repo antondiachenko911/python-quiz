@@ -130,19 +130,16 @@ function endQuiz() {
     document.getElementById("finalScore").innerText =
         username + ", ваш результат: " + score + " / " + questions.length;
 
+    const formData = new FormData();
+    formData.append("name", username);
+    formData.append("score", score);
+    formData.append("total", questions.length);
+
     fetch("https://script.google.com/macros/s/AKfycbzNmz9wZUIeE7fXGSwsyf865BnddcnWhGdn-duH9RF57HEAR_Z1l7VUnc8zvM9dj8I4jA/exec", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            name: username,
-            score: score,
-            total: questions.length
-        })
+        body: formData
     })
-    .then(response => response.json())
-    .then(data => console.log("Success:", data))
+    .then(() => console.log("Sent"))
     .catch(error => console.error("Error:", error));
 }
 
