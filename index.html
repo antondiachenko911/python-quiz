@@ -193,19 +193,18 @@ function endQuiz() {
         statusEl.style.color = "red";
     }
 
-    fetch("https://script.google.com/macros/s/AKfycbzNmz9wZUIeE7fXGSwsyf865BnddcnWhGdn-duH9RF57HEAR_Z1l7VUnc8zvM9dj8I4jA/exec", {
-        method: "POST",
-        body: JSON.stringify({
-            name: name,
-            score: score,
-            total: questions.length,
-            percent: percent
-        })
+fetch("https://script.google.com/macros/s/AKfycbzzDEcsYZEB9QOmdL-rPwzPLm3KbQgRAFkYWi4SvFHQpjYttWCJBwMroIhI3cpA8jsFyQ/exec", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        name: name,
+        score: score,
+        total: questions.length,
+        percent: percent
     })
-    .then(res => res.text())
-    .then(data => console.log("Saved:", data))
-    .catch(err => console.error("Error:", err));
-}
+});
 
 </script>
 
